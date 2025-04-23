@@ -1,0 +1,41 @@
+name: rolla
+description: "schedule_syncer_rolla"
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.4.4 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  intl: ^0.19.0
+  cupertino_icons: ^1.0.6
+  path_provider: ^2.1.5
+  path: ^1.9.0
+
+  syncfusion_flutter_calendar: ^24.2.4
+  objectbox: ^4.1.0
+  objectbox_flutter_libs: ^4.1.0
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+
+
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  objectbox_generator: ^4.1.0
+
+  build_runner: ^2.4.11
+  custom_lint:
+  riverpod_generator: ^2.4.0
+  riverpod_lint: ^2.3.10
+
+
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
