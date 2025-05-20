@@ -8,6 +8,7 @@ class EventModel {
   final DateTime from;
   final DateTime to;
   final bool isAllDay;
+  final bool isCompleted;
   final String notes; // 메모 속성 추가
 
   EventModel({
@@ -17,6 +18,7 @@ class EventModel {
     required this.from,
     required this.to,
     required this.isAllDay,
+    required this.isCompleted,
     this.notes = '', // 기본값 설정
   });
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../models/event_model.dart';
 
+// 키패드 내려가고 이동하게 하는 함수
 void handlePopWithKeyboardCheck(BuildContext context) {
   if (FocusScope.of(context).hasPrimaryFocus == false) {
     // 키패드 닫기
@@ -18,3 +18,7 @@ void handlePopWithKeyboardCheck(BuildContext context) {
 
 
 
+String formatTime(DateTime dateTime) {
+  // 시간과 분만 표시 (예: 14:30)
+  return '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+}

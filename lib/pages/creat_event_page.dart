@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import '../features/calendar_features/event_service.dart';
-import '../features/common_features/common_features.dart';
+import '../features/common_features/basic_features.dart';
 import '../models/event_model.dart';
-import '../features/objectbox/objectbox_service.dart';
 
-// 일정 생성하는 위젯
+
+// 일정 생성하는 페이지, onEventCreated는 이거 실행되고 나서 실행될 코드
 class CreateEventPage extends StatefulWidget {
   final DateTime initialDate;
   final Function(EventModel) onEventCreated;
@@ -25,7 +25,9 @@ class _CreateEventPageState extends State<CreateEventPage> {
   late TextEditingController eventMemoController;
   late DateTime selectedStartDate;
   late DateTime selectedEndDate;
+  // 처음 생성하는 이벤트니까 이거 초기값 맞네.
   bool isAllDay = false;
+  bool isCompleted = false;
 
   final EventService _eventService = EventService();
 
@@ -35,7 +37,6 @@ class _CreateEventPageState extends State<CreateEventPage> {
     eventNameController = TextEditingController();
     eventMemoController = TextEditingController();
     selectedStartDate = widget.initialDate;
-    print(widget.initialDate);
     selectedEndDate = widget.initialDate.add(const Duration(hours: 1));
   }
 
@@ -46,7 +47,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
     super.dispose();
   }
 
-  // AM/PM 포맷으로 시간 표시
+  // AM/PM 포맷으로 시간 표시 > 나중에 basic_features 로 옮겨도 되겠다.
   String formatTimeString(DateTime dateTime) {
     final hour = dateTime.hour;
     final minute = dateTime.minute.toString().padLeft(2, '0');
@@ -67,7 +68,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
             }),
         backgroundColor: Colors.white,
         centerTitle: true,
-        title: const Text('Task it', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
+        title: const Text('Taskit', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
         actions: [
           TextButton(
             onPressed: _saveEvent,
@@ -277,6 +278,7 @@ class _CreateEventPageState extends State<CreateEventPage> {
       from: selectedStartDate,
       to: selectedEndDate,
       isAllDay: isAllDay,
+      isCompleted: isCompleted,
     );
 
     // 콜백 실행 - loadEvents(앞화면에서 넘어온 것)

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 import '../features/calendar_features/calendar_data_source.dart';
 import '../features/calendar_features/event_service.dart';
+import '../features/common_features/basic_features.dart';
 import '../features/common_features/crud_features.dart';
 import 'creat_event_page.dart';
 import '../features/objectbox/objectbox_service.dart';
@@ -20,16 +22,19 @@ class MonthlyCalendar extends ConsumerStatefulWidget {
 
 class MonthlyCalendarState extends ConsumerState<MonthlyCalendar> {
   // SFCalendar 제공 캘린더 컨트롤러 위젯 탭하면 index의 날짜같은 정보 주는
+  // 그외 확정적인 건 여기서 다 클래스 필드로(클래스 내부에 선언된 변수(멤버 변수)) 선언해라. 가변적인건 InitState에서
+  // 필드는 클래스 내부에 선언된 변수만을 의미합니다. 메서드 내부에서 선언한 변수는 지역 변수
   late CalendarController _calendarController;
+  DateTime _selectedDate = DateTime.now();
+  final EventService _eventService = EventService();
+
+  // initState에서 loadEvent 함수안에서 _dateSource에 오브젝트박스 모든 이벤트 불러와서
+  // appointments에 이벤트리스트가 들어가 있게됨(나중에 월별로 하든 뭐 해야지?)
+  // initState에서 선언해줘야함. 만들어질때 비어있기도 하고 변하면 변한거 반영해야지
+  EventDataSource? _dataSource;
 
   // 선택한 날짜에 존재하는 이벤트 객체 불러오기
   List<EventModel> _selectedDateEvents = [];
-  DateTime _selectedDate = DateTime.now();
-
-  // initState에서 _dateSource에 오브젝트박스 모든 이벤트 불러와서
-  // appointments에 이벤트리스트가 들어가 있게됨(나중에 월별로 하든 뭐 해야지?)
-  EventDataSource? _dataSource;
-  final EventService _eventService = EventService();
 
   // 캘린더컨트롤러 초기화 및 선택날짜 프로바이더 읽고, 이벤트 불러오고,
   // updateSelectedDateEvents 를 통해 날짜별 이벤트 리스트를 생성해둔다. 근데 모든 날짜에 대해 실행
@@ -81,16 +86,53 @@ class MonthlyCalendarState extends ConsumerState<MonthlyCalendar> {
         final event = _selectedDateEvents[index];
         return GestureDetector(
           // index가 아닌 event 객체를 전달
-          onLongPress: () => showDeleteConfirmationDialog(event, context),
+          onTap: () {
+            showModalBottomSheet(
+              context: context,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+              ),
+              builder: (context) {
+                return _buildEventDetailSheet(event);
+              },
+            );
+          },
+          onLongPress: () => showDeleteDialog(event, context),
+
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4.0),
+            padding: const EdgeInsets.symmetric(vertical: 5.0),
             child: Container(
-              decoration:
-                  BoxDecoration(border: Border.all(), color: Colors.white),
-              child: ListTile(
-                title: Text(event.eventName),
-                subtitle:
-                    Text('${event.from.toString()} - ${event.to.toString()}'),
+              height: 48,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.black26),
+                borderRadius: BorderRadius.circular(8),
+                color: Colors.white,
+              ),
+              child: Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Image.asset('assets/images/clock.png'),
+                  ),
+                  Text(event.eventName),
+                  const Spacer(), // 이벤트 이름과 시간 사이에 공간을 만듭니다
+                  (event.isAllDay == true)
+                      ? const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text(
+                            'Free',
+                            style: TextStyle(color: Colors.grey, fontSize: 12),
+                          ),
+                        )
+                      : Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            '${formatTime(event.from)} - ${formatTime(event.to)}',
+                            style: const TextStyle(
+                                color: Colors.grey, fontSize: 12),
+                          ),
+                        ),
+                ],
               ),
             ),
           ),
@@ -99,86 +141,127 @@ class MonthlyCalendarState extends ConsumerState<MonthlyCalendar> {
     );
   }
 
-  // void _showDeleteConfirmationDialog(dynamic appointment) {
-  //   // appointment를 EventModel로 캐스팅
-  //   final event = appointment as EventModel;
-  //
-  //   showModalBottomSheet(
-  //     context: context,
-  //     builder: (context) => Container(
-  //       padding: const EdgeInsets.all(16.0),
-  //       child: Column(
-  //         mainAxisSize: MainAxisSize.min,
-  //         children: [
-  //           const SizedBox(height: 8),
-  //           const Text(
-  //             '일정 삭제',
-  //             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-  //           ),
-  //           const SizedBox(height: 16),
-  //           Text('\'${event.eventName}\' 일정을 삭제하시겠습니까?'),
-  //           const SizedBox(height: 24),
-  //           Row(
-  //             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-  //             children: [
-  //               TextButton(
-  //                 onPressed: () => Navigator.pop(context),
-  //                 child: const Text('취소', style: TextStyle(fontSize: 16)),
-  //               ),
-  //               TextButton(
-  //                 onPressed: () {
-  //                   _deleteEvent(event.id);
-  //                   Navigator.pop(context);
-  //                 },
-  //                 child: const Text(
-  //                   '삭제',
-  //                   style: TextStyle(color: Colors.red, fontSize: 16),
-  //                 ),
-  //               ),
-  //             ],
-  //           ),
-  //           const SizedBox(height: 8),
-  //         ],
-  //       ),
-  //     ),
-  //     backgroundColor: Colors.white,
-  //     shape: const RoundedRectangleBorder(
-  //       borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-  //     ),
-  //   );
-  // }
-
-  Future<void> _deleteEvent(int id) async {
-    try {
-      // 1. 이벤트 삭제
-      await _eventService.deleteEvent(id);
-
-      // 2. 이벤트 목록 다시 로드
-      final events = ObjectBoxService.getAllEvents();
-
-      // 3. 상태 변수 업데이트
-      if (mounted) {
-        setState(() {
-          _dataSource = EventDataSource(events);
-          // 선택된 날짜의 이벤트 목록도 업데이트
-          _selectedDateEvents = events
-              .where((event) => isSameDay(event.from, _selectedDate))
-              .toList();
-        });
-
-        // 4. 성공 메시지 표시
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('일정이 삭제되었습니다'), duration: Duration(seconds: 1),),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('일정 삭제 중 오류가 발생했습니다: $e')),
-        );
-      }
-    }
+  Widget _buildEventDetailSheet(EventModel event) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                event.eventName,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.edit),
+                onPressed: () {
+                  // 이벤트 수정 기능 구현
+                  Navigator.pop(context);
+                  // 수정 화면으로 이동하는 코드 추가
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Image.asset('assets/images/clock.png', width: 20, height: 20),
+              const SizedBox(width: 8),
+              Text(
+                event.isAllDay
+                    ? '종일'
+                    : '${formatTime(event.from)} - ${formatTime(event.to)}',
+                style: const TextStyle(fontSize: 16),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // if (event.description != null && event.description!.isNotEmpty)
+          //   Column(
+          //     crossAxisAlignment: CrossAxisAlignment.start,
+          //     children: [
+          //       const Text(
+          //         '메모',
+          //         style: TextStyle(
+          //           fontSize: 16,
+          //           fontWeight: FontWeight.bold,
+          //         ),
+          //       ),
+          //       const SizedBox(height: 8),
+          //       Text(
+          //         event.description!,
+          //         style: const TextStyle(fontSize: 16),
+          //       ),
+          //     ],
+          //   ),
+          // const SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('닫기'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  showDeleteDialog(event, context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('삭제'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
+
+  // Future<void> _deleteEvent(int id) async {
+  //   try {
+  //     // 1. 이벤트 삭제
+  //     await _eventService.deleteEvent(id);
+  //
+  //     // 2. 이벤트 목록 다시 로드
+  //     final events = ObjectBoxService.getAllEvents();
+  //
+  //     // 3. 상태 변수 업데이트
+  //     if (mounted) {
+  //       setState(() {
+  //         _dataSource = EventDataSource(events);
+  //         // 선택된 날짜의 이벤트 목록도 업데이트
+  //         _selectedDateEvents = events
+  //             .where((event) => isSameDay(event.from, _selectedDate))
+  //             .toList();
+  //       });
+  //
+  //       // 4. 성공 메시지 표시
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         const SnackBar(
+  //           content: Text('일정이 삭제되었습니다'),
+  //           duration: Duration(seconds: 1),
+  //         ),
+  //       );
+  //     }
+  //   } catch (e) {
+  //     if (mounted) {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(content: Text('일정 삭제 중 오류가 발생했습니다: $e')),
+  //       );
+  //     }
+  //   }
+  // }
 
   @override
   void dispose() {
@@ -202,15 +285,12 @@ class MonthlyCalendarState extends ConsumerState<MonthlyCalendar> {
         title: Text(
           // _셀렉티드데이트가 초기값은 now이지만, 이 후 선택하면 riverpod에 의해 계속 추적
           DateFormat('yyyy MMMM').format(_selectedDate),
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadEvents,
-            tooltip: '일정 새로고침',
+          style: GoogleFonts.paytoneOne(
+            fontSize: 22,
+            // fontWeight: FontWeight.bold,
+            color: Colors.black,
           ),
-        ],
+        ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),
           child: Container(color: Colors.black, height: 2.0),
@@ -380,21 +460,37 @@ class MonthlyCalendarState extends ConsumerState<MonthlyCalendar> {
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                '${DateFormat('MM/dd').format(_selectedDate)} Task it',
-                style:
-                    const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                'Taskit  ${DateFormat('MM/dd').format(_selectedDate)} ',
+                style: GoogleFonts.paytoneOne(
+                  fontSize: 14,
+                  // fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
               ),
             ),
             const SizedBox(height: 4),
             Container(
               height: 1,
-              color: Colors.black,
+              color: Colors.grey,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
             Expanded(
-              flex: 6,
-              // 리스트뷰 빌더 소환
-              child: _buildDayEventsList(),
+                flex: 6,
+                // 리스트뷰 빌더 소환
+                child: _selectedDateEvents.isNotEmpty
+                    ? _buildDayEventsList()
+                    : Center(
+                        child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset('assets/images/empty_taskit.png',
+                              width: 36),
+                          const SizedBox(height: 16),
+                          const Text('Task it easy.', style: TextStyle(color: Colors.black54),),
+                        ],
+                      ))),
+            const SizedBox(
+              height: 8,
             ),
           ],
         ),

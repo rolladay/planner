@@ -1,13 +1,11 @@
-
-
 import 'package:flutter/material.dart';
 import '../../models/event_model.dart';
 import '../calendar_features/event_service.dart';
 
 
-final EventService eventService = EventService();
+// final EventService eventService = EventService();
 
-void showDeleteConfirmationDialog(dynamic appointment, BuildContext context) {
+void showDeleteDialog(dynamic appointment, BuildContext context) {
   // appointment를 EventModel로 캐스팅
   final event = appointment as EventModel;
 

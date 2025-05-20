@@ -22,7 +22,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
       id: const obx_int.IdUid(2, 2864011472288498332),
       name: 'EventModel',
-      lastPropertyId: const obx_int.IdUid(6, 2903704484240026940),
+      lastPropertyId: const obx_int.IdUid(7, 4467813033322006499),
       flags: 0,
       properties: <obx_int.ModelProperty>[
         obx_int.ModelProperty(
@@ -54,6 +54,11 @@ final _entities = <obx_int.ModelEntity>[
             id: const obx_int.IdUid(6, 2903704484240026940),
             name: 'notes',
             type: 9,
+            flags: 0),
+        obx_int.ModelProperty(
+            id: const obx_int.IdUid(7, 4467813033322006499),
+            name: 'isCompleted',
+            type: 1,
             flags: 0)
       ],
       relations: <obx_int.ModelRelation>[],
@@ -125,19 +130,22 @@ obx_int.ModelDefinition getObjectBoxModel() {
         objectToFB: (EventModel object, fb.Builder fbb) {
           final eventNameOffset = fbb.writeString(object.eventName);
           final notesOffset = fbb.writeString(object.notes);
-          fbb.startTable(7);
+          fbb.startTable(8);
           fbb.addInt64(0, object.id);
           fbb.addOffset(1, eventNameOffset);
           fbb.addInt64(2, object.from.millisecondsSinceEpoch);
           fbb.addInt64(3, object.to.millisecondsSinceEpoch);
           fbb.addBool(4, object.isAllDay);
           fbb.addOffset(5, notesOffset);
+          fbb.addBool(6, object.isCompleted);
           fbb.finish(fbb.endTable());
           return object.id;
         },
         objectFromFB: (obx.Store store, ByteData fbData) {
           final buffer = fb.BufferContext(fbData);
           final rootOffset = buffer.derefObject(0);
+          final idParam =
+              const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
           final eventNameParam = const fb.StringReader(asciiOptimization: true)
               .vTableGet(buffer, rootOffset, 6, '');
           final fromParam = DateTime.fromMillisecondsSinceEpoch(
@@ -146,15 +154,18 @@ obx_int.ModelDefinition getObjectBoxModel() {
               const fb.Int64Reader().vTableGet(buffer, rootOffset, 10, 0));
           final isAllDayParam =
               const fb.BoolReader().vTableGet(buffer, rootOffset, 12, false);
+          final isCompletedParam =
+              const fb.BoolReader().vTableGet(buffer, rootOffset, 16, false);
           final notesParam = const fb.StringReader(asciiOptimization: true)
               .vTableGet(buffer, rootOffset, 14, '');
           final object = EventModel(
+              id: idParam,
               eventName: eventNameParam,
               from: fromParam,
               to: toParam,
               isAllDay: isAllDayParam,
-              notes: notesParam)
-            ..id = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
+              isCompleted: isCompletedParam,
+              notes: notesParam);
 
           return object;
         })
@@ -188,4 +199,8 @@ class EventModel_ {
   /// See [EventModel.notes].
   static final notes =
       obx.QueryStringProperty<EventModel>(_entities[0].properties[5]);
+
+  /// See [EventModel.isCompleted].
+  static final isCompleted =
+      obx.QueryBooleanProperty<EventModel>(_entities[0].properties[6]);
 }

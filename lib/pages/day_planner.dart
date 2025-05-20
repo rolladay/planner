@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:rolla/components/appointment_builder.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 import '../features/calendar_features/calendar_data_source.dart';
 import '../features/providers/selected_date_provider.dart';
@@ -62,8 +63,13 @@ class DayPlannerState extends ConsumerState<DayPlanner> {
         backgroundColor: Colors.white,
         scrolledUnderElevation: 0,
         title: Text(
-          DateFormat('yyyy dd MMMM').format(_selectedDate),
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          'Timer',
+          // DateFormat('yyyy dd MMMM').format(_selectedDate),
+          style: GoogleFonts.paytoneOne(
+            fontSize: 22,
+            // fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),
@@ -75,6 +81,14 @@ class DayPlannerState extends ConsumerState<DayPlanner> {
           : Padding(
               padding: const EdgeInsets.all(8.0),
               child: SfCalendar(
+                dataSource: _dataSource,
+
+
+                //scheduler에서
+                appointmentBuilder: appointmentBuilder,
+
+
+
                 appointmentTextStyle: const TextStyle(
                   fontSize: 10, // 원하는 크기로 조정
                   fontWeight: FontWeight.bold,
@@ -99,7 +113,7 @@ class DayPlannerState extends ConsumerState<DayPlanner> {
                 },
                 controller: _calendarController,
                 view: CalendarView.day,
-                dataSource: _dataSource,
+
                 // 롱탭했을때 뭘 줄지 여기 정의, 수정이 되는게 좋겠다.
                 onLongPress: (details) {
                   showDialog(
@@ -125,7 +139,10 @@ class DayPlannerState extends ConsumerState<DayPlanner> {
           context: context,
           builder: (context) => CreateEventPage(
             initialDate: _selectedDate,
-            onEventCreated: (newEvent) => _loadEvents(),
+            onEventCreated: (newEvent) {
+              _loadEvents();
+
+              }
           ),
         ),
         child: const Icon(Icons.add),

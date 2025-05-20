@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 import '../../models/event_model.dart';
-import '../objectbox/objectbox_service.dart';
 
 class EventDataSource extends CalendarDataSource {
   // 생성자 이벤트모델 리스트를 받아서 appointments에 할당해줌
@@ -10,6 +9,8 @@ class EventDataSource extends CalendarDataSource {
   }
 
   @override
+  // index는 날짜가 아니라, 이벤트 리스트(List)의 인덱스(순번, 번호)
+  // 아래 ㅁ든 override 메소드는 _getMeetingData를 통해 데이터에 접근, 가져온다.
   DateTime getStartTime(int index) {
     return _getMeetingData(index).from;
   }
@@ -52,6 +53,17 @@ class EventDataSource extends CalendarDataSource {
     // }
   }
 
+  EventModel _getMeetingData(int index) {
+    final dynamic meeting = appointments![index];
+    if (meeting is EventModel) {
+      return meeting;
+    }
+    throw TypeError(); // 또는 기본값 반환 또는 다른 예외 처리
+  }
+
+
+
+
   // 이벤트 추가 메소드
   // void addEvent(EventModel event) {
   //   appointments!.add(event);
@@ -80,13 +92,7 @@ class EventDataSource extends CalendarDataSource {
   //   notifyListeners(CalendarDataSourceAction.reset, events);
   // }
 
-  EventModel _getMeetingData(int index) {
-    final dynamic meeting = appointments![index];
-    if (meeting is EventModel) {
-      return meeting;
-    }
-    throw TypeError(); // 또는 기본값 반환 또는 다른 예외 처리
-  }
+
 }
 
 //  ObjectBox에서 이벤트 데이터를 가져와 'SfCalendar가 이해할 수 있는 EventDataSource' 형태로 변환

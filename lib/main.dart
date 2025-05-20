@@ -14,7 +14,7 @@ void main() async {
   ]);
   // ObjectBox 초기화 - 스토어(box브릿지)를 오픈해서 사용가능한 상태로 만듬(없으면 생성) main.dart에서 실행
   await ObjectBoxService.init();
-  // 앱 실행
+
   runApp(const ProviderScope(child: MyApp()));
 }
 
@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: '플래너',
+      title: 'Taskit',
 
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.black),
@@ -35,6 +35,8 @@ class MyApp extends StatelessWidget {
           selectedItemColor: Colors.black87,
           unselectedItemColor: Colors.black26,
         ),
+
+
         useMaterial3: true,
       ),
       home: const MyHome(),
